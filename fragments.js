@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-let scene, renderer, camera, mesh;
+let scene, renderer, camera;
 let moveObject = 0.02;
 
 function createGeometry() {
