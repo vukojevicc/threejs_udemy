@@ -36371,8 +36371,9 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var scene, renderer, camera, mesh;
-var moveObject = 0.02;
+var scene, renderer, camera;
+var mesh_arr = [];
+var moveObject = 0.07;
 
 function createGeometry() {
   var material = new THREE.MeshStandardMaterial({
@@ -36381,13 +36382,22 @@ function createGeometry() {
     emissive: 0xffffff,
     emissiveIntensity: .2
   });
-  var geometry = new THREE.BufferGeometry();
-  var vertices = new Float32Array([2, 0, 0, -2, 0, 0, 0, 2, 2, -2, 0, 0, -2, 0, 4, 0, 2, 2, 2, 0, 0, 2, 0, 4, 0, 2, 2, 2, 0, 4, -2, 0, 4, 0, 2, 2, 2, 0, 0, -2, 0, 0, 0, -2, 2, -2, 0, 0, -2, 0, 4, 0, -2, 2, 2, 0, 0, 2, 0, 4, 0, -2, 2, 2, 0, 4, -2, 0, 4, 0, -2, 2]);
-  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-  geometry.computeVertexNormals();
-  console.log(geometry.attributes.position.array);
-  mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
+  var vertices_arr = [new Float32Array([2, 0, 0, -2, 0, 0, 0, 2, 2]), new Float32Array([-2, 0, 0, -2, 0, 4, 0, 2, 2]), new Float32Array([2, 0, 0, 2, 0, 4, 0, 2, 2]), new Float32Array([2, 0, 4, -2, 0, 4, 0, 2, 2]), new Float32Array([2, 0, 0, -2, 0, 0, 0, -2, 2]), new Float32Array([-2, 0, 0, -2, 0, 4, 0, -2, 2]), new Float32Array([2, 0, 0, 2, 0, 4, 0, -2, 2]), new Float32Array([2, 0, 4, -2, 0, 4, 0, -2, 2])];
+
+  for (var i = 0; i < vertices_arr.length; i++) {
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices_arr[i], 3));
+    geometry.computeVertexNormals();
+    var mesh = new THREE.Mesh(geometry, material); // centriranje geometrija da se rotiraju oko svoje x ose prilikom rotacije. Jako korisno.
+
+    var center = new THREE.Vector3();
+    mesh.geometry.computeBoundingBox();
+    mesh.geometry.boundingBox.getCenter(center);
+    mesh.geometry.center();
+    mesh.position.copy(center);
+    mesh_arr.push(mesh);
+    scene.add(mesh_arr[i]);
+  }
 } // set up the environment - 
 // initiallize scene, camera, objects and renderer
 
@@ -36398,10 +36408,11 @@ function init() {
   scene.background = new THREE.Color(0x000000); // pravimo i lociramo kameru
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.z = 20;
-  var axes = new THREE.AxesHelper(15); //jako korisna stvar
+  camera.position.z = 25; // camera.position.x = 5;
 
-  scene.add(axes);
+  camera.position.y = 5; // let axes = new THREE.AxesHelper(15); //jako korisna stvar
+  // scene.add(axes);
+
   createGeometry();
   var directionalLightUp = new THREE.DirectionalLight({
     color: 0xffffff
@@ -36415,6 +36426,27 @@ function init() {
 
 
 function mainLoop() {
+  setTimeout(function () {
+    mesh_arr[0].position.y += moveObject;
+    mesh_arr[0].position.z -= moveObject;
+    mesh_arr[1].position.x -= moveObject;
+    mesh_arr[1].position.y += moveObject;
+    mesh_arr[2].position.x += moveObject;
+    mesh_arr[2].position.y += moveObject;
+    mesh_arr[3].position.y += moveObject;
+    mesh_arr[3].position.z += moveObject;
+    mesh_arr[4].position.z -= moveObject;
+    mesh_arr[4].position.y -= moveObject;
+    mesh_arr[5].position.x -= moveObject;
+    mesh_arr[5].position.y -= moveObject;
+    mesh_arr[6].position.x += moveObject;
+    mesh_arr[6].position.y -= moveObject;
+    mesh_arr[7].position.z += moveObject;
+    mesh_arr[7].position.y -= moveObject;
+    mesh_arr.forEach(function (item) {
+      item.rotation.x += moveObject;
+    });
+  }, 1000);
   renderer.render(scene, camera);
   requestAnimationFrame(mainLoop);
 }
