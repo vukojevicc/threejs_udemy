@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import { Light } from 'three';
 
-let scene, renderer, camera;
+let scene, renderer, camera, directionalLightUp;
 let mesh_arr = [];
 let moveObject = 0.07;
 
 function createGeometry() {
-    let material = new THREE.MeshStandardMaterial({
+    let material = new THREE.MeshPhongMaterial({
         color: 0xffffff,
         side: THREE.DoubleSide,
         emissive: 0xffffff,
@@ -64,7 +65,7 @@ function createGeometry() {
 
         let mesh = new THREE.Mesh(geometry, material);
 
-        // centriranje geometrija da se rotiraju oko svoje x ose prilikom rotacije. Jako korisno.
+        //centriranje geometrija da se rotiraju oko svoje x ose prilikom rotacije. Jako korisno.
         const center = new THREE.Vector3();
         mesh.geometry.computeBoundingBox();
         mesh.geometry.boundingBox.getCenter(center);
@@ -89,7 +90,7 @@ function init() {
     // pravimo i lociramo kameru
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.z = 25;
-    // camera.position.x = 5;
+    // camera.position.x = 15;
     camera.position.y = 5;
 
     // let axes = new THREE.AxesHelper(15); //jako korisna stvar
@@ -97,9 +98,8 @@ function init() {
 
     createGeometry();
 
-    let directionalLightUp = new THREE.DirectionalLight({
-        color: 0xffffff
-    });
+    directionalLightUp = new THREE.DirectionalLight(0xffffff, 1);
+
     scene.add(directionalLightUp);
 
     // pravimo renderer

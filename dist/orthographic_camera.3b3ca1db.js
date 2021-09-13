@@ -36362,7 +36362,7 @@ if (typeof window !== 'undefined') {
     window.__THREE__ = REVISION;
   }
 }
-},{}],"fragments.js":[function(require,module,exports) {
+},{}],"orthographic_camera.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -36371,86 +36371,68 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var scene, renderer, camera, directionalLightUp;
-var mesh_arr = [];
-var moveObject = 0.07;
+var scene, camera, renderer, light1, sphere;
+var add = 0.01,
+    theta = 0;
+var radius = 5,
+    base_x = -20,
+    base_y = -20;
 
-function createGeometry() {
+var createGeometry = function createGeometry() {
   var material = new THREE.MeshPhongMaterial({
-    color: 0xffffff,
-    side: THREE.DoubleSide,
-    emissive: 0xffffff,
-    emissiveIntensity: .2
+    color: 0x0450fb,
+    shininess: 100,
+    side: THREE.DoubleSide
   });
-  var vertices_arr = [new Float32Array([2, 0, 0, -2, 0, 0, 0, 2, 2]), new Float32Array([-2, 0, 0, -2, 0, 4, 0, 2, 2]), new Float32Array([2, 0, 0, 2, 0, 4, 0, 2, 2]), new Float32Array([2, 0, 4, -2, 0, 4, 0, 2, 2]), new Float32Array([2, 0, 0, -2, 0, 0, 0, -2, 2]), new Float32Array([-2, 0, 0, -2, 0, 4, 0, -2, 2]), new Float32Array([2, 0, 0, 2, 0, 4, 0, -2, 2]), new Float32Array([2, 0, 4, -2, 0, 4, 0, -2, 2])];
 
-  for (var i = 0; i < vertices_arr.length; i++) {
-    var geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices_arr[i], 3));
-    geometry.computeVertexNormals();
-    var mesh = new THREE.Mesh(geometry, material); //centriranje geometrija da se rotiraju oko svoje x ose prilikom rotacije. Jako korisno.
-
-    var center = new THREE.Vector3();
-    mesh.geometry.computeBoundingBox();
-    mesh.geometry.boundingBox.getCenter(center);
-    mesh.geometry.center();
-    mesh.position.copy(center);
-    mesh_arr.push(mesh);
-    scene.add(mesh_arr[i]);
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+      var geometry = new THREE.SphereGeometry(radius, 30, 30);
+      sphere = new THREE.Mesh(geometry, material);
+      sphere.position.x = base_x + j * 2 * (radius + 0.5);
+      sphere.position.z = -2 * radius * i;
+      sphere.position.y = base_y + i * radius;
+      scene.add(sphere);
+    }
   }
-} // set up the environment - 
-// initiallize scene, camera, objects and renderer
+}; // Set up the environment - 
+// Initialize scene, camera, objects and renderer
 
 
-function init() {
-  // Pravimo novu scenu
+var init = function init() {
+  // create the scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000); // pravimo i lociramo kameru
+  scene.background = new THREE.Color(0xffffff); // create and locate the camera
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.z = 25; // camera.position.x = 15;
-
-  camera.position.y = 5; // let axes = new THREE.AxesHelper(15); //jako korisna stvar
-  // scene.add(axes);
-
-  createGeometry();
-  directionalLightUp = new THREE.DirectionalLight(0xffffff, 1);
-  scene.add(directionalLightUp); // pravimo renderer
+  camera.position.set(0, 0, 40);
+  var axes = new THREE.AxesHelper(15);
+  light1 = new THREE.DirectionalLight(0xffffff, 1);
+  scene.add(light1, axes);
+  createGeometry(); // create the renderer
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
-} // glavna petlja animacije. Poziva se 50-60 puta u sekundi zahvaljujuci requestAnimationFrame fukciji browsera.
+};
 
-
-function mainLoop() {
-  setTimeout(function () {
-    mesh_arr[0].position.y += moveObject;
-    mesh_arr[0].position.z -= moveObject;
-    mesh_arr[1].position.x -= moveObject;
-    mesh_arr[1].position.y += moveObject;
-    mesh_arr[2].position.x += moveObject;
-    mesh_arr[2].position.y += moveObject;
-    mesh_arr[3].position.y += moveObject;
-    mesh_arr[3].position.z += moveObject;
-    mesh_arr[4].position.z -= moveObject;
-    mesh_arr[4].position.y -= moveObject;
-    mesh_arr[5].position.x -= moveObject;
-    mesh_arr[5].position.y -= moveObject;
-    mesh_arr[6].position.x += moveObject;
-    mesh_arr[6].position.y -= moveObject;
-    mesh_arr[7].position.z += moveObject;
-    mesh_arr[7].position.y -= moveObject;
-    mesh_arr.forEach(function (item) {
-      item.rotation.x += moveObject;
-    });
-  }, 1000);
+function MainLoop() {
+  camera.position.z = 50 * Math.sin(theta);
+  camera.position.x = 50 * Math.cos(theta);
+  theta += add;
+  camera.lookAt(0, 0, 0);
   renderer.render(scene, camera);
-  requestAnimationFrame(mainLoop);
+  requestAnimationFrame(MainLoop);
 }
 
 init();
-mainLoop();
+MainLoop();
+
+if (camera instanceof THREE.PerspectiveCamera) {
+  camera = new THREE.OrthographicCamera(-300, 300, 400, -400, 1, 1000);
+  camera.zoom = 5;
+  camera.updateProjectionMatrix();
+}
 },{"three":"node_modules/three/build/three.module.js"}],"C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -36479,7 +36461,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53968" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64983" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -36655,5 +36637,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","fragments.js"], null)
-//# sourceMappingURL=/fragments.87c07711.js.map
+},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","orthographic_camera.js"], null)
+//# sourceMappingURL=/orthographic_camera.3b3ca1db.js.map
