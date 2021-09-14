@@ -36362,7 +36362,7 @@ if (typeof window !== 'undefined') {
     window.__THREE__ = REVISION;
   }
 }
-},{}],"cameras_challenge.js":[function(require,module,exports) {
+},{}],"cast_shadow.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -36371,72 +36371,80 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var scene, camera, renderer, light1, sphere, greenSphere, geometry;
-var add = 0.03,
+var scene, camera, renderer, cube1, cube2, spotLight, plane;
+var ADD = 0.01,
     theta = 0;
-var radius = 5,
-    base_x = -20,
-    base_y = -20;
 
 var createGeometry = function createGeometry() {
+  var geometry = new THREE.BoxGeometry(5, 5, 5);
   var material = new THREE.MeshPhongMaterial({
-    color: 0x0450fb,
+    color: 0Xdff913,
     shininess: 100,
     side: THREE.DoubleSide
   });
-
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j < 4; j++) {
-      geometry = new THREE.SphereGeometry(radius, 30, 30);
-      sphere = new THREE.Mesh(geometry, material);
-      sphere.position.x = base_x + j * 2 * (radius + 0.5);
-      sphere.position.z = -2 * radius * i;
-      sphere.position.y = base_y + i * radius;
-      scene.add(sphere);
-    }
-  }
-
+  cube1 = new THREE.Mesh(geometry, material);
+  cube1.position.set(5, 2, 0);
+  cube1.castShadow = true;
+  cube1.receiveShadow = true;
+  geometry = new THREE.BoxGeometry(5, 6, 4);
+  cube2 = new THREE.Mesh(geometry, material);
+  cube2.position.set(-4, 2, 0);
+  cube2.castShadow = true;
+  cube2.receiveShadow = true;
+  geometry = new THREE.BoxGeometry(2000, 1, 2000);
   material = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
-    shininess: 100,
+    color: 0X693421,
     side: THREE.DoubleSide
   });
-  geometry = new THREE.SphereGeometry(radius, 30, 30);
-  greenSphere = new THREE.Mesh(geometry, material);
-  scene.add(greenSphere);
-}; // Set up the environment - 
-// Initialize scene, camera, objects and renderer
+  plane = new THREE.Mesh(geometry, material);
+  plane.position.y = -1;
+  plane.receiveShadow = true;
+  scene.add(cube1);
+  scene.add(cube2);
+  scene.add(plane);
+}; // set up the environment - 
+// initiallize scene, camera, objects and renderer
 
 
 var init = function init() {
   // create the scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff); // create and locate the camera
+  scene.background = new THREE.Color(0x000000); // create an locate the camera
 
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(0, 0, 40);
-  var axes = new THREE.AxesHelper(15);
-  light1 = new THREE.DirectionalLight(0xffffff, 1);
-  scene.add(light1, axes);
-  createGeometry(); // create the renderer
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.set(0, 5, 40);
+  spotLight = new THREE.SpotLight(0xffffff, 1);
+  spotLight.position.set(0, 15, 10);
+  spotLight.penumbra = 0.05;
+  spotLight.decay = 2;
+  spotLight.distance = 200; // // shadow
+
+  spotLight.castShadow = true;
+  spotLight.shadow.bias = 0.0001;
+  spotLight.shadow.mapSize.width = 2048;
+  spotLight.shadow.mapSize.height = 1024;
+  scene.add(spotLight);
+  createGeometry(); // create the renderer   
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   document.body.appendChild(renderer.domElement);
-};
+}; // main animation loop - calls 50-60 times per second.
 
-function MainLoop() {
-  greenSphere.position.z = 40 * Math.cos(theta);
-  greenSphere.position.y = 40 * Math.sin(theta);
-  camera.position.set(0, greenSphere.position.y, greenSphere.position.z + 30);
-  theta += add;
-  camera.lookAt(greenSphere.position);
+
+var mainLoop = function mainLoop() {
+  spotLight.position.x = 10 * Math.sin(theta);
+  spotLight.position.z = 10 * Math.cos(theta);
+  theta += ADD;
   renderer.render(scene, camera);
-  requestAnimationFrame(MainLoop);
-}
+  requestAnimationFrame(mainLoop);
+}; ///////////////////////////////////////////////
+
 
 init();
-MainLoop();
+mainLoop();
 },{"three":"node_modules/three/build/three.module.js"}],"C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -36465,7 +36473,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51036" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62182" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -36641,5 +36649,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","cameras_challenge.js"], null)
-//# sourceMappingURL=/cameras_challenge.19f219ce.js.map
+},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","cast_shadow.js"], null)
+//# sourceMappingURL=/cast_shadow.192dceb2.js.map

@@ -36362,7 +36362,7 @@ if (typeof window !== 'undefined') {
     window.__THREE__ = REVISION;
   }
 }
-},{}],"cameras_challenge.js":[function(require,module,exports) {
+},{}],"realism_challenge.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -36371,72 +36371,69 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var scene, camera, renderer, light1, sphere, greenSphere, geometry;
-var add = 0.03,
+var camera, scene, renderer, light, pyramid1, plane;
+var add = .01,
     theta = 0;
-var radius = 5,
-    base_x = -20,
-    base_y = -20;
 
-var createGeometry = function createGeometry() {
+function createGeometry() {
+  var sandTexture = new THREE.TextureLoader().load('https://i.ibb.co/HrsSnhd/a5d0c4b21ddeee97ac28c9b44dc26a92.jpg');
+  var pyramidTexture = new THREE.TextureLoader().load('https://i.ibb.co/SmJZM2N/ba624504f86336a81fb06c691624d4d4.jpg');
+  var geometry = new THREE.PlaneGeometry(70, 70);
   var material = new THREE.MeshPhongMaterial({
-    color: 0x0450fb,
-    shininess: 100,
-    side: THREE.DoubleSide
+    map: sandTexture,
+    shininess: .5
   });
-
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j < 4; j++) {
-      geometry = new THREE.SphereGeometry(radius, 30, 30);
-      sphere = new THREE.Mesh(geometry, material);
-      sphere.position.x = base_x + j * 2 * (radius + 0.5);
-      sphere.position.z = -2 * radius * i;
-      sphere.position.y = base_y + i * radius;
-      scene.add(sphere);
-    }
-  }
-
+  plane = new THREE.Mesh(geometry, material);
+  plane.rotateX(-(Math.PI / 2));
+  plane.receiveShadow = true;
+  scene.add(plane);
+  geometry = new THREE.ConeGeometry(5, 10, 4);
   material = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
-    shininess: 100,
-    side: THREE.DoubleSide
+    map: pyramidTexture
   });
-  geometry = new THREE.SphereGeometry(radius, 30, 30);
-  greenSphere = new THREE.Mesh(geometry, material);
-  scene.add(greenSphere);
-}; // Set up the environment - 
-// Initialize scene, camera, objects and renderer
+  pyramid1 = new THREE.Mesh(geometry, material);
+  pyramid1.position.set(-4, geometry.parameters.height / 2, -4);
+  pyramid1.castShadow = true;
+  pyramid1.receiveShadow = true;
+  scene.add(pyramid1);
+}
 
-
-var init = function init() {
-  // create the scene
+function init() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff); // create and locate the camera
-
+  scene.background = new THREE.Color(0xffffff);
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(0, 0, 40);
-  var axes = new THREE.AxesHelper(15);
-  light1 = new THREE.DirectionalLight(0xffffff, 1);
-  scene.add(light1, axes);
-  createGeometry(); // create the renderer
+  camera.position.set(0, 14, 60);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(0, -70, 0);
+  light.castShadow = true;
+  light.shadow.bias = 0.0001;
+  light.shadow.mapSize.width = 2048;
+  light.shadow.mapSize.height = 1024;
+  light.shadow.camera.near = 0.5; // default
 
+  light.shadow.camera.far = 500; // default
+
+  var helper = new THREE.AxesHelper(15);
+  scene.add(light, helper);
+  createGeometry();
   renderer = new THREE.WebGLRenderer();
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
-};
+}
 
-function MainLoop() {
-  greenSphere.position.z = 40 * Math.cos(theta);
-  greenSphere.position.y = 40 * Math.sin(theta);
-  camera.position.set(0, greenSphere.position.y, greenSphere.position.z + 30);
+function mainLoop() {
+  light.position.x += Math.cos(theta) * 2;
+  light.position.y += Math.sin(theta) * 2;
   theta += add;
-  camera.lookAt(greenSphere.position);
   renderer.render(scene, camera);
-  requestAnimationFrame(MainLoop);
+  requestAnimationFrame(mainLoop);
 }
 
 init();
-MainLoop();
+mainLoop();
 },{"three":"node_modules/three/build/three.module.js"}],"C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -36465,7 +36462,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51036" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62182" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -36641,5 +36638,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","cameras_challenge.js"], null)
-//# sourceMappingURL=/cameras_challenge.19f219ce.js.map
+},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","realism_challenge.js"], null)
+//# sourceMappingURL=/realism_challenge.d551590a.js.map

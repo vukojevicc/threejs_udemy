@@ -36362,7 +36362,7 @@ if (typeof window !== 'undefined') {
     window.__THREE__ = REVISION;
   }
 }
-},{}],"cameras_challenge.js":[function(require,module,exports) {
+},{}],"spot_light_challenge_and_perspective_camera.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -36371,72 +36371,86 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var scene, camera, renderer, light1, sphere, greenSphere, geometry;
-var add = 0.03,
-    theta = 0;
-var radius = 5,
-    base_x = -20,
-    base_y = -20;
+var scene, renderer, camera, plane, spotLight, spotLight2, cube1, cube2, cube3;
+var moveObject = 0.02;
+var theta = 0.1;
 
-var createGeometry = function createGeometry() {
+function createGeometry() {
+  var geometry = new THREE.PlaneGeometry(90, 100);
   var material = new THREE.MeshPhongMaterial({
-    color: 0x0450fb,
-    shininess: 100,
-    side: THREE.DoubleSide
+    color: 0x000000,
+    side: THREE.DoubleSide,
+    emissive: 0x824409,
+    emissiveIntensity: 0.3,
+    shininess: 2
   });
-
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j < 4; j++) {
-      geometry = new THREE.SphereGeometry(radius, 30, 30);
-      sphere = new THREE.Mesh(geometry, material);
-      sphere.position.x = base_x + j * 2 * (radius + 0.5);
-      sphere.position.z = -2 * radius * i;
-      sphere.position.y = base_y + i * radius;
-      scene.add(sphere);
-    }
-  }
-
+  plane = new THREE.Mesh(geometry, material);
+  geometry = new THREE.BoxGeometry(3, 3, 3);
   material = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
-    shininess: 100,
-    side: THREE.DoubleSide
+    color: 0xffffff
   });
-  geometry = new THREE.SphereGeometry(radius, 30, 30);
-  greenSphere = new THREE.Mesh(geometry, material);
-  scene.add(greenSphere);
-}; // Set up the environment - 
-// Initialize scene, camera, objects and renderer
+  cube1 = new THREE.Mesh(geometry, material);
+  cube1.position.set(-2, -4, 0);
+  geometry = new THREE.BoxGeometry(5, 5, 5);
+  material = new THREE.MeshPhongMaterial({
+    color: 0xff0000
+  });
+  cube2 = new THREE.Mesh(geometry, material);
+  cube2.position.set(3, -3, 1);
+  plane.rotation.x = Math.PI / 2;
+  plane.position.y = -4;
+  scene.add(plane, cube1, cube2);
+} // set up the environment - 
+// initiallize scene, camera, objects and renderer
 
 
-var init = function init() {
-  // create the scene
+function init() {
+  // Pravimo novu scenu
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff); // create and locate the camera
+  scene.background = new THREE.Color(0x000000); // pravimo i lociramo kameru
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(0, 0, 40);
-  var axes = new THREE.AxesHelper(15);
-  light1 = new THREE.DirectionalLight(0xffffff, 1);
-  scene.add(light1, axes);
-  createGeometry(); // create the renderer
+  camera.position.z = 10; // let axes = new THREE.AxesHelper(15); //jako korisna stvar
+  // scene.add(axes);
+
+  createGeometry();
+  spotLight = new THREE.SpotLight(0xffffff, 6, 0, Math.PI / 9, 0.0, 2);
+  spotLight.position.set(9, 4, 2);
+  spotLight.target.position.set(9, -4, 2);
+  spotLight2 = new THREE.SpotLight(0xffffff, 6, 0, Math.PI / 9, 0.0, 2);
+  spotLight2.position.set(-9, 4, 2);
+  spotLight2.target.position.set(-9, -4, 2);
+  var ambient = new THREE.AmbientLight(0xffffff, 0.1);
+  scene.add(spotLight, spotLight2, ambient); // pravimo renderer
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
-};
+} // glavna petlja animacije. Poziva se 50-60 puta u sekundi zahvaljujuci requestAnimationFrame fukciji browsera.
 
-function MainLoop() {
-  greenSphere.position.z = 40 * Math.cos(theta);
-  greenSphere.position.y = 40 * Math.sin(theta);
-  camera.position.set(0, greenSphere.position.y, greenSphere.position.z + 30);
-  theta += add;
-  camera.lookAt(greenSphere.position);
+
+function mainLoop() {
+  spotLight.position.x -= moveObject;
+  spotLight.target.position.x -= moveObject;
+  spotLight.target.updateMatrixWorld();
+  camera.lookAt(0, 0, 0);
+  camera.position.z = Math.sin(theta) * 19;
+  camera.position.x = Math.cos(theta) * 19;
+  theta += moveObject;
+  spotLight2.position.x += moveObject;
+  spotLight2.target.position.x += moveObject;
+  spotLight2.target.updateMatrixWorld();
+
+  if (spotLight.position.x > 9 || spotLight.position.x < -9) {
+    moveObject *= -1;
+  }
+
   renderer.render(scene, camera);
-  requestAnimationFrame(MainLoop);
+  requestAnimationFrame(mainLoop);
 }
 
 init();
-MainLoop();
+mainLoop();
 },{"three":"node_modules/three/build/three.module.js"}],"C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -36641,5 +36655,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","cameras_challenge.js"], null)
-//# sourceMappingURL=/cameras_challenge.19f219ce.js.map
+},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","spot_light_challenge_and_perspective_camera.js"], null)
+//# sourceMappingURL=/spot_light_challenge_and_perspective_camera.f3581ab5.js.map

@@ -36362,7 +36362,7 @@ if (typeof window !== 'undefined') {
     window.__THREE__ = REVISION;
   }
 }
-},{}],"cameras_challenge.js":[function(require,module,exports) {
+},{}],"materials_ and_light.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -36371,72 +36371,78 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var scene, camera, renderer, light1, sphere, greenSphere, geometry;
-var add = 0.03,
-    theta = 0;
-var radius = 5,
-    base_x = -20,
-    base_y = -20;
+var scene, renderer, camera, cube, sphere, cone;
+var moveObject = 0.02;
 
-var createGeometry = function createGeometry() {
-  var material = new THREE.MeshPhongMaterial({
-    color: 0x0450fb,
-    shininess: 100,
-    side: THREE.DoubleSide
+function createGeometry() {
+  // let material = new THREE.MeshLambertMaterial({
+  //     color: 0x7fc5f9,
+  //     side: THREE.DoubleSide,
+  //     emissive: 0x25673d,
+  //     emissiveIntensity: 0.5
+  // });
+  // let material = new THREE.MeshPhongMaterial({
+  //         color: 0x7fc5f9,
+  //         side: THREE.DoubleSide,
+  //         emissive: 0x25673d,
+  //         emissiveIntensity: 0.5,
+  //         shininess: 100,
+  //         specular: 0x9d0a00
+  //     });
+  var material = new THREE.MeshStandardMaterial({
+    color: 0x7fc5f9,
+    side: THREE.DoubleSide,
+    emissive: 0x25673d,
+    emissiveIntensity: 0.4,
+    metalness: 1,
+    roughness: 0
   });
-
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j < 4; j++) {
-      geometry = new THREE.SphereGeometry(radius, 30, 30);
-      sphere = new THREE.Mesh(geometry, material);
-      sphere.position.x = base_x + j * 2 * (radius + 0.5);
-      sphere.position.z = -2 * radius * i;
-      sphere.position.y = base_y + i * radius;
-      scene.add(sphere);
-    }
-  }
-
-  material = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
-    shininess: 100,
-    side: THREE.DoubleSide
-  });
-  geometry = new THREE.SphereGeometry(radius, 30, 30);
-  greenSphere = new THREE.Mesh(geometry, material);
-  scene.add(greenSphere);
-}; // Set up the environment - 
-// Initialize scene, camera, objects and renderer
+  var geometry = new THREE.BoxGeometry(3, 3, 3);
+  cube = new THREE.Mesh(geometry, material);
+  cube.position.x = -6;
+  geometry = new THREE.SphereGeometry(3, 30, 30);
+  sphere = new THREE.Mesh(geometry, material);
+  sphere.position.x = 0;
+  geometry = new THREE.ConeGeometry(3, 4, 20, 1, true);
+  cone = new THREE.Mesh(geometry, material);
+  cone.position.x = 7;
+  scene.add(cube, sphere, cone);
+} // set up the environment - 
+// initiallize scene, camera, objects and renderer
 
 
-var init = function init() {
-  // create the scene
+function init() {
+  // Pravimo novu scenu
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff); // create and locate the camera
+  scene.background = new THREE.Color(0xffffff); // pravimo i lociramo kameru
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(0, 0, 40);
-  var axes = new THREE.AxesHelper(15);
-  light1 = new THREE.DirectionalLight(0xffffff, 1);
-  scene.add(light1, axes);
-  createGeometry(); // create the renderer
+  camera.position.z = 15; // let axes = new THREE.AxesHelper(15); //jako korisna stvar
+  // scene.add(axes);
+
+  createGeometry();
+  var directionalLightUp = new THREE.DirectionalLight(0xffffff);
+  scene.add(directionalLightUp); // pravimo renderer
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
-};
+} // glavna petlja animacije. Poziva se 50-60 puta u sekundi zahvaljujuci requestAnimationFrame fukciji browsera.
 
-function MainLoop() {
-  greenSphere.position.z = 40 * Math.cos(theta);
-  greenSphere.position.y = 40 * Math.sin(theta);
-  camera.position.set(0, greenSphere.position.y, greenSphere.position.z + 30);
-  theta += add;
-  camera.lookAt(greenSphere.position);
+
+function mainLoop() {
+  cube.rotation.x += moveObject;
+  cube.rotation.y += moveObject;
+  cone.rotation.x += moveObject;
+  cone.rotation.y += moveObject;
+  sphere.rotation.x += moveObject;
+  sphere.rotation.y += moveObject;
   renderer.render(scene, camera);
-  requestAnimationFrame(MainLoop);
+  requestAnimationFrame(mainLoop);
 }
 
 init();
-MainLoop();
+mainLoop();
 },{"three":"node_modules/three/build/three.module.js"}],"C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -36641,5 +36647,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","cameras_challenge.js"], null)
-//# sourceMappingURL=/cameras_challenge.19f219ce.js.map
+},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","materials_ and_light.js"], null)
+//# sourceMappingURL=/materials_%20and_light.91821996.js.map
