@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Material, PCFShadowMap } from 'three';
 
 let camera, scene, renderer, light, pyramid1, plane;
 let add = .01, theta = 0;

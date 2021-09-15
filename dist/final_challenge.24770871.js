@@ -36362,7 +36362,7 @@ if (typeof window !== 'undefined') {
     window.__THREE__ = REVISION;
   }
 }
-},{}],"realism_challenge.js":[function(require,module,exports) {
+},{}],"final_challenge.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -36371,63 +36371,97 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-var camera, scene, renderer, light, pyramid1, plane;
-var add = .01,
-    theta = 0;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var left = 37,
+    right = 39,
+    up = 38,
+    down = 40;
+var scene, camera, renderer, light;
+var particles = [];
+var add = .2;
+
+function randomInRange(from, to) {
+  return (to - from) * Math.random() + from;
+}
+
+var Particle = /*#__PURE__*/function () {
+  function Particle() {
+    _classCallCheck(this, Particle);
+
+    var geometry = new THREE.SphereGeometry(.5, 30, 30);
+    var material = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      shininess: 100,
+      specular: 0xafeeee,
+      side: THREE.DoubleSide
+    });
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.position.x = randomInRange(-15, 15);
+    this.mesh.position.y = randomInRange(-5, 5);
+    this.mesh.position.z = randomInRange(-10, 10);
+    this.radius = this.mesh.position.x;
+    this.theta = 0;
+    this.dTheta = 2 * Math.PI / randomInRange(150, 200);
+    this.yFactor = randomInRange(0, Math.PI);
+  }
+
+  _createClass(Particle, [{
+    key: "move",
+    value: function move() {
+      this.mesh.position.y = this.radius * Math.sin(this.theta + this.yFactor);
+      this.mesh.position.x = this.radius * Math.sin(this.theta);
+      this.mesh.position.z = this.radius * Math.cos(this.theta);
+      this.theta += this.dTheta;
+    }
+  }]);
+
+  return Particle;
+}();
+
+function onKeyDown(event) {
+  if (event.keyCode == up) {
+    camera.position.z -= add;
+  } else if (e.keyCode == down) {
+    camera.position.z += add;
+  }
+}
 
 function createGeometry() {
-  var sandTexture = new THREE.TextureLoader().load('https://i.ibb.co/HrsSnhd/a5d0c4b21ddeee97ac28c9b44dc26a92.jpg');
-  var pyramidTexture = new THREE.TextureLoader().load('https://i.ibb.co/SmJZM2N/ba624504f86336a81fb06c691624d4d4.jpg');
-  var geometry = new THREE.PlaneGeometry(70, 70);
-  var material = new THREE.MeshPhongMaterial({
-    map: sandTexture,
-    shininess: .5
-  });
-  plane = new THREE.Mesh(geometry, material);
-  plane.rotateX(-(Math.PI / 2));
-  plane.receiveShadow = true;
-  scene.add(plane);
-  geometry = new THREE.ConeGeometry(5, 10, 4);
-  material = new THREE.MeshPhongMaterial({
-    map: pyramidTexture
-  });
-  pyramid1 = new THREE.Mesh(geometry, material);
-  pyramid1.position.set(-4, geometry.parameters.height / 2, -4);
-  pyramid1.castShadow = true;
-  pyramid1.receiveShadow = true;
-  scene.add(pyramid1);
-}
+  for (var i = 0; i <= 10; i++) {
+    var p = new Particle();
+    particles.push(p);
+    scene.add(p.mesh);
+  }
+} // setup the environment
+
 
 function init() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+  scene.background = new THREE.Color(0x000000);
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(0, 14, 60);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-  light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(0, -70, 0);
-  light.castShadow = true;
-  light.shadow.bias = 0.0001;
-  light.shadow.mapSize.width = 2048;
-  light.shadow.mapSize.height = 1024;
-  light.shadow.camera.near = 0.5; // default
-
-  light.shadow.camera.far = 500; // default
-
-  var helper = new THREE.AxesHelper(15);
-  scene.add(light, helper);
+  camera.position.z = 20;
+  light = new THREE.PointLight(0xffffff, 2, 30, 2);
+  var light2 = new THREE.PointLight(0xffffff, 2, 30, 2);
+  var light3 = new THREE.PointLight(0xffffff, 2, 30, 2);
+  light2.position.y = 10;
+  light3.position.y = -10;
+  scene.add(light, light2, light3);
   createGeometry();
   renderer = new THREE.WebGLRenderer();
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
+  document.addEventListener('keydown', onKeyDown);
 }
 
 function mainLoop() {
-  light.position.x += Math.cos(theta) * 2;
-  light.position.y += Math.sin(theta) * 2;
-  theta += add;
+  particles.forEach(function (p) {
+    p.move();
+  });
   renderer.render(scene, camera);
   requestAnimationFrame(mainLoop);
 }
@@ -36638,5 +36672,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","realism_challenge.js"], null)
-//# sourceMappingURL=/realism_challenge.d551590a.js.map
+},{}]},{},["C:/Users/aleks/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","final_challenge.js"], null)
+//# sourceMappingURL=/final_challenge.24770871.js.map
